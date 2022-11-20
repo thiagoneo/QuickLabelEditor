@@ -1,2 +1,2 @@
 # QuickLabelEditor
-Gerar e imprimir etiquetas a partir de dados digitados pelo usuário.
+Gerar e imprimir etiquetas ZPL a partir de dados digitados pelo usuário.
