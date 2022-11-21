@@ -126,8 +126,8 @@ class Window(qt.QMainWindow):
         command = '''file=/tmp/$(hostname)_$(date "+%Y%m%d_%T.6N").zpl  ;\
              cat ''' + fileName + ''' > "${file}" ;\
              lp -h ''' + str(self.host) + ''' -d ''' + str(self.printer) + ''' -n ''' + str(qtd) + ''' "${file}"'''
-        print(zplCode)
-        #os.system(command)
+        #print(zplCode)
+        os.system(command)
         
     def add_line_edit(self):
         self.newLineEdit = qt.QLineEdit(self.ui.verticalLayoutWidget)
