@@ -117,11 +117,17 @@ class Window(qt.QMainWindow):
             text = widget.text()
             linhas_texto.append(text)
         zplCode = self.gen_zpl_code(linhas_texto,mini_label)
+        zplCode = str(zplCode).replace('^FO', '\n^FO')
+        zplCode = zplCode.replace('^XZ', '\n^XZ')
+        fileName = "/tmp/label.tmp"
+        arq = open(fileName, "wt")
+        arq.write(zplCode)
+        arq.close()
         command = '''file=/tmp/$(hostname)_$(date "+%Y%m%d_%T.6N").zpl  ;\
-             echo ''' + str(zplCode) + ''' > "${file}" ;\
+             cat ''' + fileName + ''' > "${file}" ;\
              lp -h ''' + str(self.host) + ''' -d ''' + str(self.printer) + ''' -n ''' + str(qtd) + ''' "${file}"'''
-        os.system(command)
-        # print(command)
+        print(zplCode)
+        #os.system(command)
         
     def add_line_edit(self):
         self.newLineEdit = qt.QLineEdit(self.ui.verticalLayoutWidget)
