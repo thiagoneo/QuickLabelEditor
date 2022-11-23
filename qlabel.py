@@ -119,16 +119,19 @@ class Window(qt.QMainWindow):
         zplCode = self.gen_zpl_code(linhas_texto,mini_label)
         zplCode = str(zplCode).replace('^FO', '\n^FO')
         zplCode = zplCode.replace('^XZ', '\n^XZ')
-        fileName = "/tmp/label.tmp"
+        label_dir = "/tmp/QuickLabelEditor/"
+        if not os.path.exists(label_dir):
+            os.makedirs(label_dir)
+        fileName = label_dir + "label.tmp"
         arq = open(fileName, "wt")
         arq.write(zplCode)
         arq.close()
-        command = '''file=/tmp/$(hostname)_$(date "+%Y%m%d_%T.6N").zpl  ;\
+        command = '''file=''' + label_dir + '''$(hostname)_$(date "+%Y%m%d_%T.6N").zpl  ;\
              cat ''' + fileName + ''' > "${file}" ;\
              lp -h ''' + str(self.host) + ''' -d ''' + str(self.printer) + ''' -n ''' + str(qtd) + ''' "${file}"'''
-        #print(zplCode)
         os.system(command)
-        
+        os.system("rm " + fileName)
+        print("Etiqueta(s) enviada(s) para impressão!")
     def add_line_edit(self):
         self.newLineEdit = qt.QLineEdit(self.ui.verticalLayoutWidget)
         self.newLineEdit.setObjectName("lineEdit" + str(self.lineCounter))

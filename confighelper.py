@@ -1,7 +1,8 @@
 import os
 import configparser
 
-local_file = "config.ini"
+directory = os.path.expanduser("~") + "/.config/QuickLabelEditor/"
+local_file = directory + "config.ini"
 
 def write_config_file(host, printer, label_height, label_width, top_margin, left_margin):
     config_file = configparser.ConfigParser()
@@ -13,6 +14,8 @@ def write_config_file(host, printer, label_height, label_width, top_margin, left
     config_file.set("Label", "height", label_height)
     config_file.set("Label", "top_margin", top_margin)
     config_file.set("Label", "left_margin", left_margin)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     with open(local_file, 'w') as configfileObj:
         config_file.write(configfileObj)
         configfileObj.flush()
