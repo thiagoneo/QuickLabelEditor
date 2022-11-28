@@ -4,9 +4,10 @@ import sys,re
 import confighelper
 from PyQt5 import QtWidgets as qt
 from PyQt5 import QtGui as gui
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QDate
 from qlabelwindow import Ui_MainWindow as ui
 from settings import Ui_Dialog as SettingsDialog
+from datetime import datetime, date, timedelta
 
 class Window(qt.QMainWindow):
 
@@ -18,20 +19,40 @@ class Window(qt.QMainWindow):
 
         self.ui = ui()
         self.ui.setupUi(self)
-        self.setFixedSize(702, 435)
+        self.setFixedSize(711, 488)
+        self.setWindowTitle("Editor de etiquetas")
 
         self.lineCounter = 0
         self.ui.verticalLayout_2.setAlignment(Qt.AlignTop)
         self.add_line_edit()
 
+        self.ui.dateFab.setDate(self.current_date())
+        self.ui.tabWidget.setCurrentIndex(0)
         self.ui.btnPrint.clicked.connect(self.print_zpl_code)
         self.ui.actionAddLine.triggered.connect(self.add_line_edit)
         self.ui.actionRmLine.triggered.connect(self.remove_line_edit)
         self.ui.actionClearAll.triggered.connect(self.clear_all)
         self.ui.actionRmLine.setDisabled(True)
         self.ui.actionConfigs.triggered.connect(self.settings_dialog)
+        self.ui.tabWidget.tabBarClicked.connect(self.handle_tab_clicked)
+        self.ui.btnPrintVal.clicked.connect(self.print_zpl_code_val)
+
+    def current_date(self):
+        today = QDate(date.today().year, date.today().month, date.today().day)
+        return today
 
 
+    def handle_tab_clicked(self, index):
+        if index != 0:
+            self.ui.actionAddLine.setDisabled(True)
+            self.ui.actionRmLine.setDisabled(True)
+            self.ui.actionClearAll.setDisabled(True)
+        else:
+            self.ui.actionClearAll.setEnabled(True)
+            if self.lineCounter < 5:
+                self.ui.actionAddLine.setEnabled(True)
+            if self.lineCounter > 1:
+                self.ui.actionRmLine.setEnabled(True)
 
     def gen_zpl_code(self, text_lines, mini_label):
 
@@ -106,7 +127,7 @@ class Window(qt.QMainWindow):
             l.origin(origin_x, origin_y)
         
         return (l.dumpZPL())
-    
+
     def print_zpl_code(self):
         qtd = self.ui.spinQtd.value()
         linhas_texto = []
@@ -132,6 +153,33 @@ class Window(qt.QMainWindow):
         os.system(command)
         os.system("rm " + fileName)
         print("Etiqueta(s) enviada(s) para impressão!")
+    
+    def print_zpl_code_val(self):
+        qtd = self.ui.spinQtdVal.value()
+        dateVal = self.ui.dateFab.date().toPyDate()
+        dateVal = dateVal + timedelta(days=float(self.ui.spinVal.value()))
+        linha_fab = "Fab.: " + str(self.ui.dateFab.text())
+        linha_val = "Val.: " + str('%02d' % dateVal.day) + "/" + str('%02d' % dateVal.month) + "/" + str('%04d' % dateVal.year)
+        linhas_texto = [linha_fab, linha_val]
+        mini_label = True
+        zplCode = self.gen_zpl_code(linhas_texto,mini_label)
+        zplCode = str(zplCode).replace('^FO', '\n^FO')
+        zplCode = zplCode.replace('^XZ', '\n^XZ')
+        label_dir = "/tmp/QuickLabelEditor/"
+        if not os.path.exists(label_dir):
+            os.makedirs(label_dir)
+        fileName = label_dir + "label.tmp"
+        arq = open(fileName, "wt")
+        arq.write(zplCode)
+        arq.close()
+        command = '''file=''' + label_dir + '''$(hostname)_$(date "+%Y%m%d_%T.6N").zpl  ;\
+             cat ''' + fileName + ''' > "${file}" ;\
+             lp -h ''' + str(self.host) + ''' -d ''' + str(self.printer) + ''' -n ''' + str(qtd) + ''' "${file}"'''
+        os.system(command)
+        os.system("rm " + fileName)
+        print("Etiqueta(s) enviada(s) para impressão!")
+
+    
     def add_line_edit(self):
         self.newLineEdit = qt.QLineEdit(self.ui.verticalLayoutWidget)
         self.newLineEdit.setObjectName("lineEdit" + str(self.lineCounter))
@@ -163,6 +211,7 @@ class Window(qt.QMainWindow):
         dialog.ui = SettingsDialog()
         dialog.ui.setupUi(dialog)
         dialog.setFixedSize(402,407)
+        dialog.setWindowTitle("Configurações")
         if os.path.isfile(confighelper.local_file):
             config = confighelper.read_config_file()
             labelWidth = config['Label']['width']
@@ -196,7 +245,6 @@ class Window(qt.QMainWindow):
         dialog.ui.btnSave.accepted.connect(self.show_config_saved_dialog)
         dialog.ui.btnSave.rejected.connect(dialog.close)
         dialog.exec_()
-        # dialog.show()
 
     def load_config_file(self):
         if not os.path.isfile(confighelper.local_file):
@@ -204,7 +252,6 @@ class Window(qt.QMainWindow):
 
     def show_config_saved_dialog(self):
         dlg = qt.QMessageBox(self)
-        dlg.setWindowTitle("Informação")
         dlg.setIcon(qt.QMessageBox.Information)
         dlg.setText("Configuração salva com sucesso!")
         dlg.exec()
