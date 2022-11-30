@@ -54,7 +54,7 @@ class Window(qt.QMainWindow):
             if self.lineCounter > 1:
                 self.ui.actionRmLine.setEnabled(True)
 
-    def gen_zpl_code(self, text_lines, mini_label):
+    def gen_zpl_code(self, text_lines, mini_label, validade):
 
         self.load_default_settings()
 
@@ -73,45 +73,52 @@ class Window(qt.QMainWindow):
 
         l = zpl.Label(l_height, l_width, l_dpmm)
 
-        if mini_label == True:
-
+        if validade == True:
             font_height = 4
             font_width = 4
-
-            if len(text_lines) <=4:
-                line_spaces = 2.6
-                origin_y = 3
-            
-            else:
-                line_spaces = 1
-                origin_y = 3
-
+            line_spaces = 2.6
+            origin_y = 8
+        
         else:
-            line_spaces = 0
-            if len(text_lines) == 1:
-                font_height = 18
-                font_width = 10
-                origin_y = 8
-            
-            elif len(text_lines) == 2:
-                font_height = 12
-                font_width = 7
-                origin_y = 4
-            
-            elif len(text_lines) == 3:
-                font_height = 8
-                font_width = 6
-                origin_y = 3
-            
-            elif len(text_lines) == 4:
-                font_height = 6
-                font_width = 6
-                origin_y = 3
-            
-            elif len(text_lines) == 5:
-                font_height = 5
-                font_width = 5
-                origin_y = 3
+            if mini_label == True:
+
+                font_height = 4
+                font_width = 4
+
+                if len(text_lines) <=4:
+                    line_spaces = 2.6
+                    origin_y = 3
+                
+                else:
+                    line_spaces = 1
+                    origin_y = 3
+
+            else:
+                line_spaces = 0
+                if len(text_lines) == 1:
+                    font_height = 18
+                    font_width = 10
+                    origin_y = 8
+                
+                elif len(text_lines) == 2:
+                    font_height = 12
+                    font_width = 7
+                    origin_y = 4
+                
+                elif len(text_lines) == 3:
+                    font_height = 8
+                    font_width = 6
+                    origin_y = 3
+                
+                elif len(text_lines) == 4:
+                    font_height = 6
+                    font_width = 6
+                    origin_y = 3
+                
+                elif len(text_lines) == 5:
+                    font_height = 5
+                    font_width = 5
+                    origin_y = 3
         
         origin_y += ajuste_y
         origin_x += ajuste_x
@@ -132,12 +139,13 @@ class Window(qt.QMainWindow):
         qtd = self.ui.spinQtd.value()
         linhas_texto = []
         mini_label = self.ui.boxMiniEtiqueta.isChecked()
+        etiqueta_validade = False
         for i in range(self.lineCounter):
             widget_item = self.ui.verticalLayout_2.itemAt(i)
             widget = widget_item.widget()
             text = widget.text()
             linhas_texto.append(text)
-        zplCode = self.gen_zpl_code(linhas_texto,mini_label)
+        zplCode = self.gen_zpl_code(linhas_texto,mini_label,etiqueta_validade)
         zplCode = str(zplCode).replace('^FO', '\n^FO')
         zplCode = zplCode.replace('^XZ', '\n^XZ')
         label_dir = "/tmp/QuickLabelEditor/"
@@ -162,7 +170,8 @@ class Window(qt.QMainWindow):
         linha_val = "Val.: " + str('%02d' % dateVal.day) + "/" + str('%02d' % dateVal.month) + "/" + str('%04d' % dateVal.year)
         linhas_texto = [linha_fab, linha_val]
         mini_label = True
-        zplCode = self.gen_zpl_code(linhas_texto,mini_label)
+        etiqueta_validade = True
+        zplCode = self.gen_zpl_code(linhas_texto,mini_label,etiqueta_validade)
         zplCode = str(zplCode).replace('^FO', '\n^FO')
         zplCode = zplCode.replace('^XZ', '\n^XZ')
         label_dir = "/tmp/QuickLabelEditor/"
